@@ -5,13 +5,13 @@ use regex::Regex;
 pub fn part_one() -> Result<i32, Box<dyn std::error::Error>> {
     let file_contents = fs::read_to_string("day_one_test.txt")?;
 
-    let mut dial = Dial::new();
-    let mut zero_count = 0;
+    let mut dial: Dial = Dial::new();
+    let mut zero_count: i32 = 0;
     for line in file_contents.lines() {
-        let rotation = Rotation::new(line).unwrap();
+        let rotation: Rotation = Rotation::new(line).unwrap_or(Rotation::Left(0));
         zero_count += dial.rotate(&rotation);
     }
-    
+
     Ok(zero_count)
 }
 
@@ -25,19 +25,26 @@ impl Dial {
     }
 
     fn rotate(&mut self, rotation: &Rotation) -> i32 {
-        let rotation = match rotation {
+        // Convert rotation direction to positive/negative values
+        let rotation: i32 = match rotation {
             Rotation::Left(ticks) => -(*ticks as i32),
             Rotation::Right(ticks) => *ticks as i32,
         };
 
-        let dial_long = self.position + rotation;
-        let mut passes_through_zero = (dial_long / 100).abs();
-        
-        if self.position != 0 && dial_long <= 0 {
+        // Get the un-wrapped new position of the dial
+        let non_wrapped_position: i32 = self.position + rotation;
+
+        // Start passes through zero as the total number of rotations
+        let mut passes_through_zero: i32 = (non_wrapped_position / 100).abs();
+
+        // If the dial didn't start at zero, but went negative, add an extra pass through zero
+        if self.position != 0 && non_wrapped_position <= 0 {
             passes_through_zero += 1;
         }
-        
-        self.position = (dial_long).rem_euclid(100);
+
+        // wrap the position to be between 0-99 again
+        self.position = (non_wrapped_position).rem_euclid(100);
+
         passes_through_zero
     }
 }
@@ -45,24 +52,27 @@ impl Dial {
 #[derive(Debug, PartialEq)]
 enum Rotation {
     Left(u32),
-    Right(u32)
+    Right(u32),
 }
 
 impl Rotation {
     fn new(string_code: &str) -> Option<Rotation> {
-        let parse_regex: Regex = Regex::new(r"([LR])(\d+)").ok()?;
-        if let Some(captures) = parse_regex.captures(string_code) {
-            let direction_code: &str = captures.get(1)?.as_str();
-            let ticks: u32 = captures.get(2)?.as_str().parse::<u32>().ok()?;
+        // Regex that can parse rotations from file
+        let parse_regex = Regex::new(r"([LR])(\d+)").ok()?;
 
-            return match direction_code{
-                "L" => Some(Rotation::Left(ticks)),
-                "R" => Some(Rotation::Right(ticks)),
-                _ => None,
-            };
+        // set captures if the regex matches the rotation code, otherwise return None
+        let captures = parse_regex.captures(string_code)?;
+
+        // Extract the direction and ticks from the code
+        let direction_code = captures.get(1)?.as_str();
+        let ticks = captures.get(2)?.as_str().parse::<u32>().ok()?;
+
+        // Return a rotation struct
+        match direction_code {
+            "L" => Some(Rotation::Left(ticks)),
+            "R" => Some(Rotation::Right(ticks)),
+            _ => None,
         }
-
-        None
     }
 }
 
