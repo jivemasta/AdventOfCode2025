@@ -3,7 +3,7 @@ use std::fs;
 pub fn part_one() -> Result<u32, Box<dyn std::error::Error>> {
     let final_joltage = fs::read_to_string("day_three_input.txt")?
         .lines()
-        .map(get_joltage)
+        .filter_map(get_joltage)
         .sum();
 
     Ok(final_joltage)
@@ -13,8 +13,16 @@ pub fn part_two() -> Result<u32, Box<dyn std::error::Error>> {
     todo!()
 }
 
-fn get_joltage(battery_bank: &str) -> u32 {
-    todo!()
+fn get_joltage(battery_bank: &str) -> Option<u32> {
+    let count = battery_bank.chars().count();
+
+    let (index,first) = battery_bank.chars().take(count-1).map(|c| c.to_digit(10)).enumerate().max_by_key(|&(_,val)| val)?;
+
+    let second = battery_bank[index+1..].chars().map(|c| c.to_digit(10)).max()??;
+
+    let thingy:u32 = format!("{}{}",first?,second).parse().ok()?;
+    println!("{} => {}", battery_bank, thingy);
+    Some(thingy)
 }
 
 #[cfg(test)]
@@ -25,27 +33,27 @@ mod day_three_test {
     fn joltage_test_1() {
         let joltage = get_joltage("987654321111111");
 
-        assert_eq!(joltage, 98);
+        assert_eq!(joltage, Some(98));
     }
 
     #[test]
     fn joltage_test_2() {
         let joltage = get_joltage("811111111111119");
 
-        assert_eq!(joltage, 89);
+        assert_eq!(joltage, Some(89));
     }
 
     #[test]
     fn joltage_test_3() {
         let joltage = get_joltage("234234234234278");
 
-        assert_eq!(joltage, 78);
+        assert_eq!(joltage, Some(78));
     }
 
     #[test]
     fn joltage_test_4() {
         let joltage = get_joltage("818181911112111");
 
-        assert_eq!(joltage, 92);
+        assert_eq!(joltage, Some(92));
     }
 }
