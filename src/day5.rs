@@ -6,8 +6,8 @@ pub fn part_one() -> Result<u32, Box<dyn std::error::Error>> {
     let input_string = fs::read_to_string("day_four_input.txt")?;
     let (fresh_inventory_string, inventory_string) = get_freshness_lists(&input_string).unwrap();
 
-    let fresh_inventory = dbg!(get_freshness_range(fresh_inventory_string).unwrap());
-    let inventory = get_inventory(inventory_string).unwrap();
+    let fresh_inventory = get_freshness_range(fresh_inventory_string).unwrap();
+    let inventory = dbg!(get_inventory(inventory_string).unwrap());
 
     println!("ranges: {}", fresh_inventory.iter().count());
     println!("inventory count: {}", inventory.iter().count());
@@ -17,7 +17,7 @@ pub fn part_one() -> Result<u32, Box<dyn std::error::Error>> {
 }
 
 fn get_freshness_lists(input_string: &str) -> Option<(&str,&str)> {
-    let list_parsing_regex = Regex::new(r"((?:(?:\d+)-(?:\d+)\r\n)+)\r\n((?:(?:\d+)(?:\r\n?))+)").unwrap();
+    let list_parsing_regex = Regex::new(r"((?:(?:\d+)-(?:\d+)\r\n)+)\r\n((?:(?:\d+)(?:\r\n)?)+)").unwrap();
     let captures = list_parsing_regex.captures(input_string)?;
 
 
